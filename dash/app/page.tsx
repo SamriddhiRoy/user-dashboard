@@ -1,5 +1,4 @@
 import Head from 'next/head';
-import TodoList from '../components/TodoList'; // Adjust path if needed
 
 export default function Home() {
   return (
@@ -34,8 +33,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Todo List Section */}
-        <TodoList />
+        {/* Dashboard Content Section */}
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h2>
+          <p className="text-gray-600">Welcome to your dashboard! Your recent activities and todos will appear here.</p>
+        </div>
       </main>
     </div>
   );

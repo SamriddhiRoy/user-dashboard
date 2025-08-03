@@ -6,34 +6,25 @@ import { eq } from 'drizzle-orm'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const currentUser = await requireSuperuser()
-
-    // Prevent users from changing their own role
-    if (params.id === currentUser.id) {
-      return NextResponse.json({ 
-        error: 'You cannot change your own role' 
-      }, { status: 400 })
-    }
-
-    const body = await request.json()
-    const { role } = body
-
+    await requireSuperuser()
+    
+    const { id } = await params
+    const { role } = await request.json()
+    
     if (!role || !['normal', 'superuser'].includes(role)) {
-      return NextResponse.json({ 
-        error: 'Invalid role. Must be "normal" or "superuser"' 
-      }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Invalid role. Must be "normal" or "superuser".' },
+        { status: 400 }
+      )
     }
 
     const [updatedUser] = await db
       .update(users)
-      .set({
-        role,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, params.id))
+      .set({ role })
+      .where(eq(users.id, id))
       .returning({
         id: users.id,
         email: users.email,
