@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "es2020", // Changed from ES2017 to a more modern target
     "lib": [
       "dom",
       "dom.iterable",
@@ -26,14 +26,17 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "baseUrl": "." // <-- ADD THIS LINE
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "**/*.js", // Include .js files if you have them in your project
+    "**/*.jsx", // Include .jsx files if you have them in your project
     ".next/types/**/*.ts"
-, "app/admin/layout.jsx", "app/admin/components/Header.tsx", "app/admin/categories/page.jsx", "app/admin/components/Userdetails.jsx"  ],
+  ],
   "exclude": [
     "node_modules"
   ]

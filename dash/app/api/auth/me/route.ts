@@ -6,9 +6,11 @@ export async function GET(request: NextRequest) {
     const user = await getCurrentUser()
     
     if (!user) {
+      console.log('No user found in /api/auth/me')
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
+    console.log('User found in /api/auth/me:', user.email)
     return NextResponse.json(user)
   } catch (error) {
     console.error('Error in /api/auth/me:', error)

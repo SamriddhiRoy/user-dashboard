@@ -26,7 +26,10 @@ export default function AuthForm({ isLogin }) {
     if (authError) {
       setError(authError.message)
     } else {
-      router.push('/dashboard')
+      // Wait a moment for the auth state to update
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 1000)
     }
   }
 
