@@ -5,7 +5,7 @@ import { users } from '../server/schema'
 import { eq } from 'drizzle-orm'
 
 export async function getCurrentUser() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

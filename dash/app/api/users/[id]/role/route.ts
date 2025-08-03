@@ -6,13 +6,14 @@ import { eq } from 'drizzle-orm'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const currentUser = await requireSuperuser()
+    const { id } = await params
 
     // Prevent users from changing their own role
-    if (params.id === currentUser.id) {
+    if (id === currentUser.id) {
       return NextResponse.json({ 
         error: 'You cannot change your own role' 
       }, { status: 400 })
@@ -33,7 +34,7 @@ export async function PATCH(
         role,
         updatedAt: new Date(),
       })
-      .where(eq(users.id, params.id))
+      .where(eq(users.id, id))
       .returning({
         id: users.id,
         email: users.email,

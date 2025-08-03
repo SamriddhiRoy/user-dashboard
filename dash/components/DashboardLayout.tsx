@@ -52,7 +52,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const isActive = (href: string) => {
-    return pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
+    return pathname === href || (href !== '/dashboard' && pathname?.startsWith(href))
   }
 
   return (

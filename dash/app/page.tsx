@@ -1,3 +1,5 @@
+'use client'
+
 import Head from 'next/head';
 import TodoList from '../components/TodoList'; // Adjust path if needed
 
@@ -35,7 +37,12 @@ export default function Home() {
         </div>
 
         {/* Todo List Section */}
-        <TodoList />
+        <TodoList 
+          todos={[]} 
+          onEdit={() => {}} 
+          onDelete={() => {}} 
+          onToggleComplete={() => {}} 
+        />
       </main>
     </div>
   );
