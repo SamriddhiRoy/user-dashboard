@@ -1,41 +1,74 @@
 'use client'
 
 import { useState } from 'react'
-import supabase from '../lib/supabase'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 
 import { FcGoogle } from 'react-icons/fc'
 
 export default function AuthForm({ isLogin }) {
   const router = useRouter()
+  const supabase = createClientComponentClient()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError(null)
+    setLoading(true)
 
-    let data, authError
-    if (isLogin) {
-      ({ data, error: authError } = await supabase.auth.signInWithPassword({ email, password }))
-    } else {
-      ({ data, error: authError } = await supabase.auth.signUp({ email, password }))
-    }
+    try {
+      let data, authError
+      if (isLogin) {
+        ({ data, error: authError } = await supabase.auth.signInWithPassword({ 
+          email, 
+          password 
+        }))
+      } else {
+        ({ data, error: authError } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            emailRedirectTo: `${location.origin}/auth/callback`
+          }
+        }))
+      }
 
-    if (authError) {
-      setError(authError.message)
-    } else {
-      router.push('/dashboard')
+      if (authError) {
+        setError(authError.message)
+      } else if (isLogin && data.session) {
+        router.push('/dashboard')
+        router.refresh()
+      } else if (!isLogin) {
+        setError('Please check your email for a verification link.')
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
   const handleGoogleLogin = async () => {
-    const { error: googleError } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-    })
-    if (googleError) {
-      setError(googleError.message)
+    setError(null)
+    setLoading(true)
+    
+    try {
+      const { error: googleError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${location.origin}/auth/callback`
+        }
+      })
+      if (googleError) {
+        setError(googleError.message)
+      }
+    } catch (err) {
+      setError('Failed to sign in with Google. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -48,10 +81,11 @@ export default function AuthForm({ isLogin }) {
 
       <button
         onClick={handleGoogleLogin}
-        className="w-full flex items-center justify-center gap-2 border px-4 py-2 rounded hover:bg-gray-100 transition mb-4"
+        disabled={loading}
+        className="w-full flex items-center justify-center gap-2 border px-4 py-2 rounded hover:bg-gray-100 transition mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <FcGoogle className="text-xl" />
-        <span>Log In with Google</span>
+        <span>{loading ? 'Signing in...' : 'Log In with Google'}</span>
       </button>
 
       <div className="flex items-center my-4">
@@ -101,11 +135,24 @@ export default function AuthForm({ isLogin }) {
 
         <button
           type="submit"
-          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded mt-4"
+          disabled={loading}
+          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLogin ? 'Login' : 'Sign Up'}
+          {loading ? 'Loading...' : (isLogin ? 'Login' : 'Sign Up')}
         </button>
       </form>
+
+      <div className="text-center mt-4">
+        <p className="text-sm text-gray-600">
+          {isLogin ? "Don't have an account? " : "Already have an account? "}
+          <a 
+            href={isLogin ? '/auth/register' : '/auth/login'} 
+            className="text-green-600 hover:underline"
+          >
+            {isLogin ? 'Sign up' : 'Sign in'}
+          </a>
+        </p>
+      </div>
     </div>
   )
 }
