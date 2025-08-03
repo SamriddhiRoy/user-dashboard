@@ -6,7 +6,7 @@ import { eq, and } from 'drizzle-orm'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser()
@@ -15,6 +15,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
+    const { id } = await params
     const body = await request.json()
     const { title, description, scheduledAt } = body
 
@@ -42,7 +43,7 @@ export async function PUT(
         scheduledAt: scheduledDate,
         updatedAt: new Date(),
       })
-      .where(and(eq(todos.id, params.id), eq(todos.userId, user.id)))
+      .where(and(eq(todos.id, id), eq(todos.userId, user.id)))
       .returning()
 
     if (!updatedTodo) {
@@ -58,7 +59,7 @@ export async function PUT(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser()
@@ -67,6 +68,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
+    const { id } = await params
     const body = await request.json()
     const { completed } = body
 
@@ -86,7 +88,7 @@ export async function PATCH(
     const [updatedTodo] = await db
       .update(todos)
       .set(updateData)
-      .where(and(eq(todos.id, params.id), eq(todos.userId, user.id)))
+      .where(and(eq(todos.id, id), eq(todos.userId, user.id)))
       .returning()
 
     if (!updatedTodo) {
@@ -102,7 +104,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser()
@@ -111,9 +113,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
+    const { id } = await params
     const [deletedTodo] = await db
       .delete(todos)
-      .where(and(eq(todos.id, params.id), eq(todos.userId, user.id)))
+      .where(and(eq(todos.id, id), eq(todos.userId, user.id)))
       .returning()
 
     if (!deletedTodo) {
